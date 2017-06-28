@@ -56,7 +56,7 @@ public class Controller implements Initializable {
                         new File(f, "aaa.txt"),
                         new File(f, "file_2.mp4"),
                         new File(f, "try.txt"),
-                        new File(f, "nop.png")
+                        new File(f, "v1z1.png")
                 )
         );
 
@@ -92,11 +92,12 @@ public class Controller implements Initializable {
 
         tfPrefixe.setText("file_*");
 
-        /*String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
+        String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
         setupTestFolder(testFolder);
-        setDossier(new File(testFolder));*/
+        setDossier(new File(testFolder));
 
         //setDossier(new File(USER_HOME));
+        //setDossier(new File("C:\\Users\\Nico\\Documents\\Private\\Video"));
     }
 
     @FXML
@@ -155,6 +156,53 @@ public class Controller implements Initializable {
         if (choix != null) { // l'utilisateur a choisi un dossier
             setDossier(choix);
         }
+    }
+
+    @FXML
+    private void montrerPrefixes() {
+        ArrayList<String> lp = organizeAll.getLp();
+
+        Dialog<String> dialog = new Dialog<>();
+
+        BorderPane borderPane = new BorderPane();
+        Label titre = new Label("Préfixes détectés parmi les fichiers");
+        titre.setFont(new Font(null, 24));
+
+        ListView<String> listView = new ListView<>();
+        listView.setItems(FXCollections.observableArrayList(lp));
+        listView.setCellFactory(e ->
+            new ListCell<String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (empty) {
+                        setOnMouseClicked(null);
+                        setText(null);
+                    } else {
+                        setOnMouseClicked(e -> {
+                            if (e.getClickCount() == 2)
+                                ((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).fire();
+                        });
+                        setText(item);
+                    }
+                }
+        });
+
+        borderPane.setTop(titre);
+        borderPane.setCenter(listView);
+
+        dialog.getDialogPane().setContent(borderPane);
+        dialog.setResultConverter(b -> {
+            String selected = listView.getSelectionModel().getSelectedItem();
+            if (b == ButtonType.OK && selected != null)
+                tfPrefixe.setText(selected);
+
+            return null;
+        });
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.setTitle("Choisir un préfixe");
+        dialog.showAndWait();
     }
 
     public void supprimer(Element e) {

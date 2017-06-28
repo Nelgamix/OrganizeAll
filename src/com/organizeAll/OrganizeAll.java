@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
  */
 public class OrganizeAll {
     private final static String PATTERN = "(\\*+)";
+    private final static String PATTERN_DIGIT = "(\\d+)";
     private static int nbReplace;
 
     private File base;
@@ -27,8 +28,10 @@ public class OrganizeAll {
     private int nombreDossiers;
     private int extensionsDifferentes;
 
+    private ArrayList<Fichier> lt;
     private ArrayList<Pair<Fichier, File>> lf;
     private ArrayList<Fichier> lc;
+    private ArrayList<String> lp;
 
     public OrganizeAll() {}
 
@@ -49,6 +52,7 @@ public class OrganizeAll {
     private void analyseDossier(File dossier) {
         dossierBase = new Dossier(dossier, dossier.getAbsolutePath());
         dossierBase.deepSearch();
+        lp = findPrefixes(dossierBase.getFichiers());
     }
 
     private void countExtensions() {
@@ -135,7 +139,6 @@ public class OrganizeAll {
             f.rename(ctmp, true);
         }
     }
-
     private void renommageFinal(ArrayList<Pair<Fichier, File>> lf) {
         for (Pair<Fichier, File> e : lf)
             e.getKey().rename(e.getValue());
@@ -197,10 +200,39 @@ public class OrganizeAll {
         return lt;
     }
 
+    private ArrayList<String> findPrefixes(ArrayList<Fichier> lf) {
+        //System.out.println("Find prefixes ---");
+
+        ArrayList<String> liste = new ArrayList<>();
+
+        Pattern p = Pattern.compile(PATTERN_DIGIT);
+        Matcher m;
+        String nom;
+        for (Fichier f : lf) {
+            //System.out.print("Fichier " + f.getNom() + ": ");
+            m = p.matcher(f.getNom());
+            while (m.find()) {
+                nom = f.getNom().substring(0, m.start());
+                for (int i = m.start(); i < m.end(); i++)
+                    nom += "*";
+                nom += f.getNom().substring(m.end(), f.getNom().length());
+
+                if (!liste.contains(nom)) liste.add(nom);
+
+                //System.out.print(" '" + nom + "' ");
+            }
+            //System.out.println();
+        }
+
+        //System.out.println("Fin prefixes end ---");
+
+        return liste;
+    }
+
     public ArrayList<Pair<Fichier, File>> analyse(Controller.Tri tri, String prefixe, boolean deepSearch) {
         if (!verifierPrefixe(prefixe)) return null;
 
-        ArrayList<Fichier> lt = tri(dossierBase.getFichiers(deepSearch), tri, prefixe);
+        lt = tri(dossierBase.getFichiers(deepSearch), tri, prefixe);
 
         lf = nommage(lt, prefixe);
         lc = conflits(lf);
@@ -244,7 +276,9 @@ public class OrganizeAll {
     public File getBase() {
         return base;
     }
-
+    public ArrayList<String> getLp() {
+        return lp;
+    }
     //    public ArrayList<Pair<Fichier, File>> analyseBase(String prefix) {
 //        ArrayList<Pair<Fichier, File>> toRename = new ArrayList<>();
 //

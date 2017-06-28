@@ -93,7 +93,14 @@
                                     <ComboBox fx:id="cbTri" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                     <CheckBox fx:id="cbDeepSearch" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                     <Label text="Préfixe" GridPane.rowIndex="3" />
-                                    <TextField fx:id="tfPrefixe" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <BorderPane GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <center>
+                                          <TextField fx:id="tfPrefixe" />
+                                       </center>
+                                       <right>
+                                          <Button mnemonicParsing="false" onAction="#montrerPrefixes" text="O" BorderPane.alignment="CENTER" />
+                                       </right>
+                                    </BorderPane>
                                  </children>
                               </GridPane>
                            </children>

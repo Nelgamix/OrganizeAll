@@ -24,7 +24,7 @@ public class Fichier extends Element {
         return super.getChemin() + "." + getExtension();
     }
     public String getExtension() {
-        return extension;
+        return extension.toLowerCase();
     }
     public String getNomEtExtension() {
         return getNom() + "." + getExtension();
