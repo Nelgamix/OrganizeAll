@@ -20,6 +20,9 @@ public class Fichier extends Element {
         this.nom = String.join(".", Arrays.copyOfRange(fileAndExt, 0, fileAndExt.length - 1));
     }
 
+    @Override public String getChemin() {
+        return super.getChemin() + "." + getExtension();
+    }
     public String getExtension() {
         return extension;
     }

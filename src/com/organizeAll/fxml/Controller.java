@@ -3,24 +3,28 @@ package com.organizeAll.fxml;
 import com.organizeAll.ListViewCell;
 import com.organizeAll.elements.Element;
 import com.organizeAll.elements.Fichier;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import com.organizeAll.OrganizeAll;
 import javafx.util.Pair;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Controller implements Initializable {
-    enum Tri {
+    public enum Tri {
         DEFAUT,
+        NOM,
         TAILLE,
         EXTENSION,
         DERNIERE_MODIFICATION,
@@ -42,17 +46,85 @@ public class Controller implements Initializable {
 
     private OrganizeAll organizeAll = new OrganizeAll();
 
+    private void setupTestFolder(String folder) {
+        File f = new File(folder);
+
+        ArrayList<File> files = new ArrayList<>(
+                Arrays.asList(
+                        new File(f, "test.txt"),
+                        new File(f, "file_1.txt"),
+                        new File(f, "aaa.txt"),
+                        new File(f, "file_2.txt"),
+                        new File(f, "try.txt"),
+                        new File(f, "nop.txt")
+                )
+        );
+
+        try {
+            for (File ft : files)
+                if (!ft.exists())
+                    new FileOutputStream(ft).close();
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         lvItems.setCellFactory(item -> new ListViewCell());
         cbTri.setItems(FXCollections.observableArrayList(Tri.values()));
+        cbTri.getSelectionModel().selectFirst();
 
-        setDossier(new File(USER_HOME + "/Pictures/Wallhaven"));
+        tfPrefixe.setText("file_*");
+
+        String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
+        setupTestFolder(testFolder);
+
+        //setDossier(new File(USER_HOME + "/Pictures/Wallhaven"));
+        setDossier(new File(testFolder));
     }
 
     @FXML
     private void previsualiser() {
+        ArrayList<Pair<Fichier, File>> l = organizeAll.analyse(cbTri.getSelectionModel().getSelectedItem(), tfPrefixe.getText());
+        if (l == null) {
+            erreur("Le préfixe est invalide.");
+            return;
+        }
 
+        Dialog<Void> dialog = new Dialog<>();
+
+        BorderPane b = new BorderPane();
+
+        Label titre = new Label("Prévisualisation");
+        titre.setFont(new Font(null, 24));
+
+        TableView<Pair<Fichier, File>> tableView = new TableView<>();
+        TableColumn<Pair<Fichier, File>, String> columnFichier = new TableColumn<>("Fichier concerné");
+        TableColumn<Pair<Fichier, File>, String> columnFile = new TableColumn<>("... sera renommé en");
+
+        columnFichier.setCellValueFactory(e -> new ReadOnlyStringWrapper(e.getValue().getKey().getNomEtExtension()));
+        columnFile.setCellValueFactory(e -> new ReadOnlyStringWrapper(organizeAll.removeBaseFromString(e.getValue().getValue().getAbsolutePath())));
+
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableView.getColumns().addAll(columnFichier, columnFile);
+        tableView.setItems(FXCollections.observableArrayList(l));
+
+        b.setTop(titre);
+        b.setCenter(tableView);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK)
+                if (organizeAll.renommage())
+                    reloadDossier();
+
+            return null;
+        });
+        dialog.getDialogPane().setContent(b);
+        dialog.getDialogPane().setPrefSize(400, 400);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.setTitle("Prévisualisation");
+        dialog.showAndWait();
     }
 
     /**
@@ -79,6 +151,9 @@ public class Controller implements Initializable {
             System.err.println("Erreur: impossible de charger le dossier " + dossier.getAbsolutePath());
     }
 
+    private void reloadDossier() {
+        setDossier(organizeAll.getBase());
+    }
     private void setDossier(File dossier) {
         bDossier.setText(dossier.getAbsolutePath());
         initDossier(dossier);
@@ -88,7 +163,11 @@ public class Controller implements Initializable {
         lExtensionsDifferentes.setText(String.valueOf(organizeAll.getExtensionsDifferentes()));
     }
 
-    public static void erreur(String message) {
+    private static void erreur(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Une erreur est survenue");
+        alert.setContentText(message);
 
+        alert.showAndWait();
     }
 }

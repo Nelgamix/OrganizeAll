@@ -19,11 +19,15 @@ public class ListViewCell extends ListCell<Element> {
     private void clearContenu() {
         setGraphic(null);
         setText(null);
+        setOnMouseClicked(null);
     }
-
     private void setContenu(Element item) {
         imageView.setImage(item.getIcone());
         setGraphic(imageView);
+        setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2)
+                item.open();
+        });
 
         if (item.getType() == Element.Type.FICHIER)
             setText(((Fichier) item).getNomEtExtension());

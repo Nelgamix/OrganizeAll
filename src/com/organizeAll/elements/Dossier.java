@@ -2,7 +2,6 @@ package com.organizeAll.elements;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -33,11 +32,17 @@ public class Dossier extends Element {
     public ArrayList<Element> getElements() {
         return elements;
     }
-    public List<Element> getFichiers() {
-        return elements.stream().filter(e -> e.getType() == Type.FICHIER).collect(Collectors.toList());
+    public ArrayList<Fichier> getFichiers() {
+        ArrayList<Fichier> ret = new ArrayList<>();
+        for (Element e : elements.stream().filter(e -> e.getType() == Type.FICHIER).collect(Collectors.toList()))
+            ret.add((Fichier) e);
+        return ret;
     }
-    public List<Element> getSousDossiers() {
-        return elements.stream().filter(e -> e.getType() == Type.DOSSIER).collect(Collectors.toList());
+    public ArrayList<Dossier> getSousDossiers() {
+        ArrayList<Dossier> ret = new ArrayList<>();
+        for (Element e : elements.stream().filter(e -> e.getType() == Type.DOSSIER).collect(Collectors.toList()))
+            ret.add((Dossier) e);
+        return ret;
     }
 
     public void deepSearch() {
