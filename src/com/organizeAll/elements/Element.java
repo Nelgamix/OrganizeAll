@@ -3,7 +3,7 @@ package com.organizeAll.elements;
 import com.organizeAll.Icons;
 import javafx.scene.image.Image;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,10 +28,10 @@ public abstract class Element {
     String nom;
     String base;
 
-    private String[] dossiers;
+    String[] dossiers;
     Type type;
-    private String derniereModification;
-    private long taille;
+    String derniereModification;
+    long taille;
 
     Element(File file, String base) {
         this.file = file;
@@ -63,11 +63,14 @@ public abstract class Element {
     public String getBase() {
         return base;
     }
+    public String getLocation() {
+        return formatPath(getBase() + String.join(File.separator, getDossiers()));
+    }
     public String getCheminAbsolu() {
         return base + getChemin();
     }
     public String getChemin() {
-        return String.join(File.separator, dossiers) + getNom();
+        return String.join(File.separator, getDossiers()) + getNom();
     }
     public String[] getDossiers() {
         return dossiers;
@@ -85,15 +88,14 @@ public abstract class Element {
     public long getTaille() {
         return taille;
     }
-    public String getTailleHumain() {
-        long s = getTaille();
-        long k, m, g; // ko, mo, go
+    public String getTailleHumain(boolean si) {
+        long bytes = getTaille();
 
-        if (s < 1024) return s + " octets";
-        if ((k = s / 1024) < 1024 && (s %= 1024) > -1) return k + "." + s + " ko";
-        if ((m = k / 1024) < 1024 && (k %= 1024) > -1) return m + "." + k + " mo";
-        if ((g = m / 1024) < 1024 && (m %= 1024) > -1) return g + "." + m + " go";
-        return "Impossible de connaître la taille";
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
     public Image getIcone() {
         return Icons.getIcone(this);
@@ -137,6 +139,15 @@ public abstract class Element {
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    public boolean delete() {
+        boolean r = true;
+        if (fileTmp != null && fileTmp.exists())
+            r = fileTmp.delete();
+        if (file.exists())
+            r = r && file.delete();
+
+        return r;
     }
 
     @Override

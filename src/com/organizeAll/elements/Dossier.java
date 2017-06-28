@@ -2,6 +2,7 @@ package com.organizeAll.elements;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -38,11 +39,40 @@ public class Dossier extends Element {
             ret.add((Fichier) e);
         return ret;
     }
+    public ArrayList<Fichier> getFichiers(boolean deepSearch) {
+        ArrayList<Fichier> ret = new ArrayList<>();
+
+        // si deep search
+        if (deepSearch) {
+            for (Dossier d : getSousDossiers(true))
+                ret.addAll(d.getFichiers());
+        }
+
+        ret.addAll(getFichiers());
+
+        return ret;
+    }
     public ArrayList<Dossier> getSousDossiers() {
         ArrayList<Dossier> ret = new ArrayList<>();
         for (Element e : elements.stream().filter(e -> e.getType() == Type.DOSSIER).collect(Collectors.toList()))
             ret.add((Dossier) e);
         return ret;
+    }
+    private ArrayList<Dossier> getSousDossiers(boolean deepSearch) {
+        if (!deepSearch) return getSousDossiers();
+        return getSousDossier(0, MAX_LEVEL);
+    }
+    private ArrayList<Dossier> getSousDossier(int level, int maxLevel) {
+        ArrayList<Dossier> a = new ArrayList<>();
+
+        for (Dossier d : getSousDossiers()) {
+            a.add(d);
+            if (level < maxLevel) {
+                a.addAll(d.getSousDossier(level + 1, maxLevel));
+            }
+        }
+
+        return a;
     }
 
     public void deepSearch() {
@@ -69,5 +99,17 @@ public class Dossier extends Element {
         if (fichiers != null)
             for (File f : fichiers)
                 addElement(new Fichier(f, base));
+    }
+
+    @Override
+    public String toString() {
+        return "Dossier{" +
+                "elements=" + elements +
+                ", nom='" + nom + '\'' +
+                ", base='" + base + '\'' +
+                ", dossiers=" + Arrays.toString(dossiers) +
+                ", derniereModification='" + derniereModification + '\'' +
+                ", taille=" + taille +
+                '}';
     }
 }

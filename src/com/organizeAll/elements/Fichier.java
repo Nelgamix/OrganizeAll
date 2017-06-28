@@ -29,4 +29,16 @@ public class Fichier extends Element {
     public String getNomEtExtension() {
         return getNom() + "." + getExtension();
     }
+
+    @Override
+    public String toString() {
+        return "Fichier{" +
+                "extension='" + extension + '\'' +
+                ", nom='" + nom + '\'' +
+                ", base='" + base + '\'' +
+                ", dossiers=" + Arrays.toString(dossiers) +
+                ", derniereModification='" + derniereModification + '\'' +
+                ", taille=" + taille +
+                '}';
+    }
 }

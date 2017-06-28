@@ -52,16 +52,31 @@ public class Controller implements Initializable {
         ArrayList<File> files = new ArrayList<>(
                 Arrays.asList(
                         new File(f, "test.txt"),
-                        new File(f, "file_1.txt"),
+                        new File(f, "file_1.png"),
                         new File(f, "aaa.txt"),
-                        new File(f, "file_2.txt"),
+                        new File(f, "file_2.mp4"),
                         new File(f, "try.txt"),
-                        new File(f, "nop.txt")
+                        new File(f, "nop.png")
+                )
+        );
+
+        File dolder = new File(f, "dolder");
+        if (!dolder.exists())
+            dolder.mkdir();
+
+        ArrayList<File> filesDolder = new ArrayList<>(
+                Arrays.asList(
+                        new File(dolder, "sisi.jpg"),
+                        new File(dolder, "try.mp4"),
+                        new File(dolder, "nop.txt")
                 )
         );
 
         try {
             for (File ft : files)
+                if (!ft.exists())
+                    new FileOutputStream(ft).close();
+            for (File ft : filesDolder)
                 if (!ft.exists())
                     new FileOutputStream(ft).close();
         } catch (IOException io) {
@@ -71,22 +86,22 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        lvItems.setCellFactory(item -> new ListViewCell());
+        lvItems.setCellFactory(item -> new ListViewCell(this));
         cbTri.setItems(FXCollections.observableArrayList(Tri.values()));
         cbTri.getSelectionModel().selectFirst();
 
         tfPrefixe.setText("file_*");
 
-        String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
+        /*String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
         setupTestFolder(testFolder);
+        setDossier(new File(testFolder));*/
 
-        //setDossier(new File(USER_HOME + "/Pictures/Wallhaven"));
-        setDossier(new File(testFolder));
+        //setDossier(new File(USER_HOME));
     }
 
     @FXML
     private void previsualiser() {
-        ArrayList<Pair<Fichier, File>> l = organizeAll.analyse(cbTri.getSelectionModel().getSelectedItem(), tfPrefixe.getText());
+        ArrayList<Pair<Fichier, File>> l = organizeAll.analyse(cbTri.getSelectionModel().getSelectedItem(), tfPrefixe.getText(), cbDeepSearch.isSelected());
         if (l == null) {
             erreur("Le préfixe est invalide.");
             return;
@@ -140,6 +155,47 @@ public class Controller implements Initializable {
         if (choix != null) { // l'utilisateur a choisi un dossier
             setDossier(choix);
         }
+    }
+
+    public void supprimer(Element e) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Supprimer");
+        alert.setHeaderText("Suppression de l'élément " + e.getChemin());
+        alert.setContentText("Voulez-vous vraiment supprimer cet élément?\nCette opération est irréversible.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            e.delete();
+            reloadDossier();
+        }
+    }
+    public void renommer(Element e) {
+        TextInputDialog textInputDialog = new TextInputDialog(e.getNom());
+        textInputDialog.setTitle("Renommer");
+        textInputDialog.setHeaderText("Renommage de l'élément " + e.getChemin());
+        textInputDialog.setContentText("Entrez un nouveau nom");
+
+        Optional<String> result = textInputDialog.showAndWait();
+        if (result.isPresent()) {
+            String nc = e.getBase() + result.get();
+            if (e.getType() == Element.Type.FICHIER)
+                nc += "." + ((Fichier) e).getExtension();
+            File ft = new File(nc);
+            e.rename(ft);
+            reloadDossier();
+        }
+    }
+    public void debug(Element e) {
+        Dialog<Void> dialog = new Dialog<>();
+        BorderPane borderPane = new BorderPane();
+        TextArea textArea = new TextArea(e.toString());
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        borderPane.setCenter(textArea);
+
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().setContent(borderPane);
+        dialog.showAndWait();
     }
 
     private void initDossier(File dossier) {

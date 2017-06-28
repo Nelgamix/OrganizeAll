@@ -181,13 +181,13 @@ public class OrganizeAll {
                 lt.sort(Comparator.comparing(Fichier::getTaille));
                 break;
             case DOSSIER:
-
+                //lt.sort(Comparator.comparing(Fichier::getChemin));
                 break;
             case EXTENSION:
-
+                lt.sort(Comparator.comparing(Fichier::getExtension));
                 break;
             case DERNIERE_MODIFICATION:
-
+                lt.sort(Comparator.comparing(Fichier::getDerniereModification));
                 break;
             default:
                 System.err.println("Impossible de trier: tri inconnu");
@@ -197,10 +197,10 @@ public class OrganizeAll {
         return lt;
     }
 
-    public ArrayList<Pair<Fichier, File>> analyse(Controller.Tri tri, String prefixe) {
+    public ArrayList<Pair<Fichier, File>> analyse(Controller.Tri tri, String prefixe, boolean deepSearch) {
         if (!verifierPrefixe(prefixe)) return null;
 
-        ArrayList<Fichier> lt = tri(dossierBase.getFichiers(), tri, prefixe);
+        ArrayList<Fichier> lt = tri(dossierBase.getFichiers(deepSearch), tri, prefixe);
 
         lf = nommage(lt, prefixe);
         lc = conflits(lf);
