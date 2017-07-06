@@ -42,6 +42,7 @@ public class Controller implements Initializable {
     @FXML private CheckBox cbDeepSearch;
     @FXML private ComboBox<Tri> cbTri;
     @FXML private TextField tfPrefixe;
+    @FXML private TextField tfIndexationDebut;
     @FXML private ListView<Element> lvItems;
 
     private OrganizeAll organizeAll = new OrganizeAll();
@@ -90,19 +91,26 @@ public class Controller implements Initializable {
         cbTri.setItems(FXCollections.observableArrayList(Tri.values()));
         cbTri.getSelectionModel().selectFirst();
 
-        tfPrefixe.setText("file_*");
+        /*tfPrefixe.setText("file_*");
 
         String testFolder = "C:\\Users\\Nico\\IdeaProjects\\organizeAll\\Test";
         setupTestFolder(testFolder);
-        setDossier(new File(testFolder));
+        setDossier(new File(testFolder));*/
 
-        //setDossier(new File(USER_HOME));
-        //setDossier(new File("C:\\Users\\Nico\\Documents\\Private\\Video"));
+        setDossier(new File(USER_HOME));
     }
 
     @FXML
     private void previsualiser() {
-        ArrayList<Pair<Fichier, File>> l = organizeAll.analyse(cbTri.getSelectionModel().getSelectedItem(), tfPrefixe.getText(), cbDeepSearch.isSelected());
+        int indexDeb;
+        try {
+            indexDeb = Integer.parseInt(tfIndexationDebut.getText());
+        } catch (NumberFormatException n) {
+            erreur("Le numéro d'indexation de début est invalide");
+            return;
+        }
+
+        ArrayList<Pair<Fichier, File>> l = organizeAll.analyse(cbTri.getSelectionModel().getSelectedItem(), tfPrefixe.getText(), cbDeepSearch.isSelected(), indexDeb);
         if (l == null) {
             erreur("Le préfixe est invalide.");
             return;

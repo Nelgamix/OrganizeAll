@@ -28,6 +28,7 @@ public class OrganizeAll {
     private int nombreDossiers;
     private int extensionsDifferentes;
 
+    private int indexDeb;
     private ArrayList<Fichier> lt;
     private ArrayList<Pair<Fichier, File>> lf;
     private ArrayList<Fichier> lc;
@@ -98,7 +99,7 @@ public class OrganizeAll {
      * @return la liste des fichiers fournis, avec leur nouveau java.io.File renommé
      */
     private ArrayList<Pair<Fichier, File>> nommage(ArrayList<Fichier> lf, String prefixe) {
-        int i = 1;
+        int i = indexDeb;
         ArrayList<Pair<Fichier, File>> lp = new ArrayList<>();
 
         File nf;
@@ -229,9 +230,10 @@ public class OrganizeAll {
         return liste;
     }
 
-    public ArrayList<Pair<Fichier, File>> analyse(Controller.Tri tri, String prefixe, boolean deepSearch) {
+    public ArrayList<Pair<Fichier, File>> analyse(Controller.Tri tri, String prefixe, boolean deepSearch, int iDeb) {
         if (!verifierPrefixe(prefixe)) return null;
 
+        indexDeb = iDeb;
         lt = tri(dossierBase.getFichiers(deepSearch), tri, prefixe);
 
         lf = nommage(lt, prefixe);
@@ -279,69 +281,4 @@ public class OrganizeAll {
     public ArrayList<String> getLp() {
         return lp;
     }
-    //    public ArrayList<Pair<Fichier, File>> analyseBase(String prefix) {
-//        ArrayList<Pair<Fichier, File>> toRename = new ArrayList<>();
-//
-//        Pattern p1 = Pattern.compile(PATTERN);
-//
-//        //int numberCount = StringUtils.countMatches(prefix, "*");
-//        int precond = 0;
-//
-//        Matcher m1 = p1.matcher(prefix);
-//        while (m1.find())
-//            precond++;
-//
-//        if (prefix.length() == 0 || precond != 1) {
-//            Controller.erreur("Pattern non valide");
-//            return null;
-//        }
-//
-//        // Fichiers dans la gridView
-//        ArrayList<Fichier> fichiers = new ArrayList<>(items);
-//
-//        // Fichiers "matchs" = fichiers qui ont déjà le bon format
-//        HashMap<Integer, Fichier> matchs = new HashMap<>();
-//
-//        // Patterne compilé
-//        String capturePattern = prefix.replaceAll(PATTERN, "(.*)");
-//        Pattern p = Pattern.compile(capturePattern);
-//
-//        // Temporaire
-//        Matcher m;
-//        Fichier ita;
-//        for (Iterator<Fichier> it = fichiers.iterator(); it.hasNext();) { // Pour chaque fichier
-//            ita = it.next(); // Get le next dans l'itérateur
-//            m = p.matcher(ita.getNom()); // Match le pattern sur le nom du fichier actuel
-//            if (m.find()) { // si le matcher a trouvé
-//                it.remove(); // on le traite autre part (dans la HashMap)
-//
-//                Integer index = Integer.parseInt(m.group(1));
-//                matchs.put(index, ita);
-//            }
-//        }
-//
-//        // On traite d'abord les fichiers déjà au bon format
-//        int i = 1;
-//        String newName;
-//        File newFile;
-//        TreeMap<Integer, Fichier> matchsSorted = new TreeMap<>(matchs);
-//        for (Fichier matched : matchsSorted.values()) {
-//            newName = format(prefix, i++, numberCount);
-//            newFile = new File(matched.getDossier() + newName + "." + matched.getExtension());
-//            if (!newFile.exists()) {
-//                toRename.add(new Pair<>(matched, newFile));
-//            }
-//        }
-//
-//        // Puis le reste
-//        for (Fichier nonMatched : fichiers) {
-//            newName = format(prefix, i++, numberCount);
-//            newFile = new File(nonMatched.getDossier() + newName + "." + nonMatched.getExtension());
-//            if (!newFile.exists()) {
-//                toRename.add(new Pair<>(nonMatched, newFile));
-//            }
-//        }
-//
-//        return toRename;
-//    }
 }
